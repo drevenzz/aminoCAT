@@ -35,14 +35,14 @@ class Context:
                                               embed=embed,
                                               link_snippets_list=link_snippets_list)
 
-    async def send_image(self, image: bytes):
-        return await self.client.send_image(image, chat_id=self.msg.threadId)
+    async def send_image(self, image: bytes, chat_id: str):
+        return await self.client.send_image(image, chat_id=chat_id)
 
-    async def send_gif(self, gif: bytes):
-        return await self.client.send_gif(gif, chat_id=self.msg.threadId)
+    async def send_gif(self, gif: bytes, chat_id: str):
+        return await self.client.send_gif(gif, chat_id=chat_id)
 
-    async def send_audio(self, audio: bytes):
-        return await self.client.send_audio(audio, chat_id=self.msg.threadId)
+    async def send_audio(self, audio: bytes, chat_id: str):
+        return await self.client.send_audio(audio, chat_id=chat_id)
 
     async def download_from_link(self, link: str):
         return await self.client.download_from_link(link)
@@ -64,26 +64,108 @@ class Context:
                                               link_snippets_list=link_snippets_list,
                                               reply=reply)
 
-    async def get_user_info(self):
-        return await self.client.get_user_info(self.msg.uid)
+    async def edit_profile(self,
+                           nickname: Optional[str] = None,
+                           content: Optional[str] = None,
+                           icon: Optional[str] = None,
+                           chat_request_privilege: Optional[str] = None,
+                           image_list: Optional[list] = None,
+                           caption_list: Optional[list] = None,
+                           background_image: Optional[str] = None,
+                           background_color: Optional[str] = None,
+                           titles: Optional[list] = None,
+                           colors: Optional[list] = None,
+                           default_bubble_id: Optional[str] = None):
+        return await self.client.edit_profile(nickname=nickname,
+                                              content=content,
+                                              icon=icon,
+                                              chat_request_privilege=chat_request_privilege,
+                                              image_list=image_list,
+                                              caption_list=caption_list,
+                                              background_image=background_image,
+                                              background_color=background_color,
+                                              titles=titles,
+                                              colors=colors,
+                                              default_bubble_id=default_bubble_id)
+
+    async def get_user_info(self, user_id: str):
+        return await self.client.get_user_info(user_id)
 
     async def invite(self, chat_id: str):
         return await self.client.invite_to_chat(uids=[self.msg.uid], chat_id=chat_id)
 
-    async def follow(self):
-        return await self.client.follow([self.msg.uid])
+    async def follow(self, user_id: str):
+        return await self.client.follow([user_id])
 
-    async def unfollow(self):
-        return await self.client.unfollow(self.msg.uid)
+    async def unfollow(self, user_id: str):
+        return await self.client.unfollow(user_id)
 
-    async def delete_message(self, as_staff: bool = False, reason: Optional[str] = None):
-        return self.client.delete_message(chat_id=self.msg.threadId,
-                                          message_id=self.msg.messageId,
+    async def delete_message(self, chat_id: str, message_id: str, as_staff: bool = False, reason: Optional[str] = None):
+        return self.client.delete_message(chat_id=chat_id,
+                                          message_id=message_id,
                                           reason=reason,
                                           as_staff=as_staff)
 
-    async def kick(self, allow_rejoin: bool = True):
+    async def edit_chat(self,
+                        chat_id: str,
+                        title: Optional[str] = None,
+                        icon: Optional[str] = None,
+                        content: Optional[str] = None,
+                        announcement: Optional[str] = None,
+                        keywords: List = None,
+                        pin_announcement: bool = True,
+                        publish_to_global: bool = False,
+                        fans_only: bool = False):
+        return await self.client.edit_chat(chat_id=chat_id,
+                                           title=title,
+                                           icon=icon,
+                                           content=content,
+                                           keywords=keyword,
+                                           pin_announcement=pin_announcement,
+                                           publish_to_global=publish_to_global,
+                                           fans_only=fans_only)
+
+    async def send_active_object(self,
+                                 opt_in_ads_flags: int = 2147483647,
+                                 tz: int = -timezone // 1000,
+                                 timers: Optional[Tuple[Dict[str, int], ...]] = None):
+        return await send_active_object(opt_in_ads_flags, tz, timers)
+
+    async def comment_profile(self,
+                              uid: str,
+                              message: Optional[str] = None,
+                              sticker_id: Optional[str] = None,
+                              reply: Optional[str] = None):
+        return await self.client.comment_profile(uid, message, sticker_id, reply)
+
+    async def check_in(self, tz: int = -timezone // 1000):
+        return await self.client.check_in(tz)
+
+    async def lottery(self, tz: int = -timezone // 1000):
+        return await self.client.lottery(tz)
+
+    async def send_coins(self,
+                         coins: int,
+                         blog_id: Optional[str] = None,
+                         chat_id: Optional[str] = None,
+                         object_id: Optional[str] = None,
+                         transaction_id: Optional[str] = None):
+        return await self.client.send_coins(coins, blog_id, chat_id, object_id, transaction_id)
+
+    async def subscribe(self,
+                        user_id: str,
+                        auto_renew: bool = False,
+                        transaction_id: Optional[str] = None):
+        return await self.client.subscribe(user_id, auto_renew, transaction_id)
+
+    async def kick(self, chat_id: str, user_id: str, allow_rejoin: bool = True):
         return self.client.kick_from_chat(self.msg.threadId, self.msg.uid, allow_rejoin)
+
+    async def ban(self, user_id: str, reason: str):
+        return await self.client.ban(user_id, reason)
+
+    async def unban(self, user_id: str, reason: str):
+        return await self.client.unban(user_id, reason)
 
     async def join_community(self, code: Optional[str] = None):
         return await self.client.join_community(code)
@@ -91,11 +173,20 @@ class Context:
     async def leave_community(self):
         return await self.client.leave_community()
 
-    async def join_chat(self):
-        return await self.client.join_chat(self.msg.threadId)
+    async def get_wallet_info(self):
+        return await self.client.get_wallet_info()
 
-    async def leave_chat(self):
-        return await self.client.leave_chat(self.msg.threadId)
+    async def get_chats(self, start: int = 0, size: int = 100):
+        return await self.client.get_chats(start, size)
+    
+    async def get_bubbles(self, start: int = 0, size: int = 100):
+        return await self.client.get_bubbles(start, size)
+
+    async def join_chat(self, chat_id: str):
+        return await self.client.join_chat(chat_id)
+
+    async def leave_chat(self, chat_id: str):
+        return await self.client.leave_chat(chat_id)
 
     async def get_info_link(self, link: str):
         return await self.client.get_info_link(link)
@@ -103,8 +194,8 @@ class Context:
     async def get_from_id(self, object_id: str, object_type: int = 0):
         return await self.client.get_from_id(object_id, object_type=object_type)
 
-    async def get_user_blogs(self, start: int = 0, size: int = 25):
-        return await self.client.get_user_blogs(self.msg.uid, start=start, size=size)
+    async def get_user_blogs(self, user_id: str, start: int = 0, size: int = 25):
+        return await self.client.get_user_blogs(user_id, start=start, size=size)
 
     @asynccontextmanager
     async def typing(self, chat_type: Literal[0, 1, 2] = 2):
@@ -161,11 +252,11 @@ class Context:
                                             is_global=is_global,
                                             publish_to_global=publish_to_global)
 
-    async def send_sticker(self, sticker_id: str):
-        return await self.client.send_sticker(self.msg.threadId, sticker_id)
+    async def send_sticker(self, chat_id: str, sticker_id: str):
+        return await self.client.send_sticker(chat_id, sticker_id)
 
-    async def get_chat_info(self):
-        return await self.client.get_chat_info(self.msg.threadId)
+    async def get_chat_info(self, chat_id: str):
+        return await self.client.get_chat_info(chat_id)
 
     @contextmanager
     def set_ndc(self, ndc_id: int = 0):
@@ -175,8 +266,8 @@ class Context:
         finally:
             self.client.set_ndc(self.msg.ndcId)
 
-    async def get_message_info(self):
-        return await self.client.get_message_info(self.msg.threadId, self.msg.messageId)
+    async def get_message_info(self, chat_id: str, message_id: str):
+        return await self.client.get_message_info(chat_id, message_id)
 
     async def actions(self, actions: List[str], thread_type: int, chat_id: Optional[str] = None,
                       ndc_id: Optional[int] = None):
